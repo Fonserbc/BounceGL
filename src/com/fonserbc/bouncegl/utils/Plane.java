@@ -55,22 +55,19 @@ public class Plane extends Shape {
 	@Override
 	public void draw(float[] mvpMatrix) {
 		
-		Log.d("BOUNCE_GL", "Trying to access gl_Vertex");
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "gl_Vertex");		
+		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vertex");		
 		
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 		
-		Log.d("BOUNCE_GL", "Trying to access gl_Color");
-		mColorHandle = GLES20.glGetUniformLocation(mProgram, "gl_Color");
+		mColorHandle = GLES20.glGetUniformLocation(mProgram, "color");
 		GameGLRenderer.checkGlError("glGetUniformLocation");
 		
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
         
-        Log.d("BOUNCE_GL", "Trying to access gl_ModelViewProjectionMatrix");
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "gl_ModelViewProjectionMatrix");
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "modelViewProjectionMatrix");
         GameGLRenderer.checkGlError("glGetUniformLocation");
         
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
