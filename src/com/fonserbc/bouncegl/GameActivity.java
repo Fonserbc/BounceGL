@@ -30,7 +30,7 @@ class GameGLSurfaceView extends GLSurfaceView {
 
 		setEGLContextClientVersion(2);
 		
-		mRenderer = new GameGLRenderer();
+		mRenderer = new GameGLRenderer(context);
 		setRenderer(mRenderer);
 		
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);

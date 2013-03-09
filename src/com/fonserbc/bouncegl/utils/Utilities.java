@@ -7,7 +7,7 @@ import java.io.InputStream;
 import android.content.Context;
 
 public class Utilities {
-	static String stringFromResource (Context context, int id) {
+	public static String stringFromResource (Context context, int id) {
 		InputStream inputStream = context.getResources().openRawResource(id);
 		
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
