@@ -29,6 +29,10 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
     
     private Timer timer;
     
+    private float mXAngle = 0;
+    private float mYAngle = 0;
+    private float[] mCurrRotation = new float[16];
+    
     public GameGLRenderer (Context context) {
     	mContext = context;
     	
@@ -39,10 +43,11 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
 		
 		GLES20.glClearColor(0f, 0.1f, 0.2f, 1.0f);
 		
-		Matrix.setLookAtM(mVMatrix, 0,  0,1,2,  0,1,0,  0,1,0);
+		Matrix.setLookAtM(mVMatrix, 0,  0,0,1.5f,  0,0,0,  0,1,0);
+		Matrix.setIdentityM(mCurrRotation, 0);
 		
-		String vertexCode = Utilities.stringFromResource(mContext, R.raw.testvert);
-		String fragmentCode = Utilities.stringFromResource(mContext, R.raw.testfrag);
+		String vertexCode = Utilities.stringFromResource(mContext, R.raw.textvert2);
+		String fragmentCode = Utilities.stringFromResource(mContext, R.raw.testfrag2);
 		
 		int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexCode);
 		int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentCode);
@@ -55,46 +60,83 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
         
         int mSpeedPointer = GLES20.glGetUniformLocation(basicShader, "speed");
         GameGLRenderer.checkGlError("glGetUniformLocation");
-		GLES20.glUniform1fv(mSpeedPointer, 1, new float[] {1}, 0);
+		GLES20.glUniform1fv(mSpeedPointer, 1, new float[] {0}, 0);
 		
-		planes = new Plane[4];
+		int mTilingPointer = GLES20.glGetUniformLocation(basicShader, "tiling");
+        GameGLRenderer.checkGlError("glGetUniformLocation");
+		GLES20.glUniform1fv(mTilingPointer, 1, new float[] {4}, 0);
 		
-		planes[0] = new Plane(basicShader,
-				new Vector3(-1, 0, 0),
-				new Vector3(0, 0, -2),
-				new Vector3(2, 0, 0), 1);
-		planes[0].setColor(new float[] {0.5f,0.6f,0.5f,1}); //GRAYGREEN
+		int mStrokePointer = GLES20.glGetUniformLocation(basicShader, "lineSize");
+        GameGLRenderer.checkGlError("glGetUniformLocation");
+		GLES20.glUniform1fv(mStrokePointer, 1, new float[] {0.1f}, 0);
 		
-		planes[1] = new Plane(basicShader,	//Left
-				new Vector3(-1, 0, 0),
-				new Vector3(0, 2, 0),
-				new Vector3(0, 0, -2), 1);
-		planes[1].setColor(new float[] {1f,0f,0f,1}); // RED
-		
-		planes[2] = new Plane(basicShader,	//Top
-				new Vector3(1, 2, 0),
-				new Vector3(0, 0, -2),
-				new Vector3(-2, 0, 0), 1);
-		planes[2].setColor(new float[] {0f,1f,0f,1}); //GREEN
-		
-		planes[3] = new Plane(basicShader,	//Right
-				new Vector3(1, 0, -2),
-				new Vector3(0, 2, 0),
-				new Vector3(0, 0, 2), 1);
-		planes[3].setColor(new float[] {0f,0f,1f,1}); // BLUE
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+		GLES20.glClearDepthf(1.0f);
+		GLES20.glDepthFunc( GLES20.GL_LEQUAL );
+		GLES20.glDepthMask( true );
+
+		initScene();
 	}
 	
+	private void initScene() {
+		planes = new Plane[6];
+		
+		planes[0] = new Plane(basicShader, //Top
+				new Vector3(-0.5f, 0.5f, -0.5f),
+				new Vector3(0, 0, 1),
+				new Vector3(1, 0, 0), 1);
+		planes[0].setColor(new float[] {1f,1f,0f,1}); // YELLOW
+		
+		planes[1] = new Plane(basicShader,	//Left
+				new Vector3(-0.5f, -0.5f, -0.5f),
+				new Vector3(0, 1, 0),
+				new Vector3(0, 0, 1), 1);
+		planes[1].setColor(new float[] {1f,0f,0f,1}); // RED
+		
+		planes[2] = new Plane(basicShader,	//Bot
+				new Vector3(-0.5f, -0.5f, 0.5f),
+				new Vector3(0, 0, -1),
+				new Vector3(1, 0, 0), 1);
+		planes[2].setColor(new float[] {0f,1f,0f,1}); // GREEN
+		
+		planes[3] = new Plane(basicShader,	//Right
+				new Vector3(0.5f, -0.5f, 0.5f),
+				new Vector3(0, 1, 0),
+				new Vector3(0, 0, -1), 1);
+		planes[3].setColor(new float[] {0f,0f,1f,1}); // BLUE
+		
+		planes[4] = new Plane(basicShader,	//Front
+				new Vector3(-0.5f, -0.5f, 0.5f),
+				new Vector3(0, 1, 0),
+				new Vector3(1, 0, 0), 1);
+		planes[4].setColor(new float[] {1f,0f,1f,1}); // MAGENTA
+		
+		planes[5] = new Plane(basicShader,	//Back
+				new Vector3(0.5f, -0.5f, -0.5f),
+				new Vector3(0, 1, 0),
+				new Vector3(-1, 0, 0), 1);
+		planes[5].setColor(new float[] {0f,1f,1f,1}); // CYAN
+	}
+
 	public void onDrawFrame(GL10 unused) {
 		
 		timer.tick();
 
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 			
-		Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
-		
 		float[] aux = new float[16];
-		Matrix.invertM(aux, 0, mVMatrix, 0);
-		Matrix.transposeM(mNormalMatrix, 0, aux, 0);
+		float[] aux2 = new float[16];
+		Matrix.setIdentityM(aux, 0);
+		Matrix.rotateM(aux, 0, mXAngle, 1, 0, 0);
+		Matrix.rotateM(aux, 0, mYAngle, 0, 1, 0);
+		aux2 = mCurrRotation.clone();
+		Matrix.multiplyMM(mCurrRotation, 0, aux, 0, aux2, 0);
+		mXAngle = mYAngle = 0;
+		Matrix.multiplyMM(aux, 0, mVMatrix, 0, mCurrRotation, 0);
+		Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, aux, 0);
+		
+		Matrix.invertM(aux2, 0, aux, 0);
+		Matrix.transposeM(mNormalMatrix, 0, aux2, 0);
 		
 		int mTimePointer = GLES20.glGetUniformLocation(basicShader, "time");
 		GameGLRenderer.checkGlError("glGetUniformLocation");
@@ -145,4 +187,14 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
             throw new RuntimeException(glOperation + ": glError " + error);
         }
     }
+
+	public void touchMovement(float x, float y) {
+		mXAngle += x;
+		if (mXAngle > 180f) mXAngle -= 360;
+		else if (mXAngle < -180f) mXAngle += 360;
+		
+		mYAngle += y;
+		if (mYAngle > 180f) mYAngle -= 360;
+		else if (mYAngle < -180f) mYAngle += 360;
+	}
 }

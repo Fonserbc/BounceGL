@@ -1,7 +1,11 @@
 precision mediump float;
 uniform vec4 color;
 
+uniform float tiling;
+uniform float lineSize;
+
 varying float normalZ;
+varying vec4 gl_TexCoord[];
 
 void main () {
 	gl_FragColor = color * max (0.3, max(0.0, normalZ));

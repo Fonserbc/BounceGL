@@ -19,14 +19,16 @@ public class Plane extends Shape {
 
 
     private int mPositionHandle;
+    private int mTexCoordHandle;
     private int mColorHandle;
-    private int mMVPMatrixHandle;
     private int mNormalHandle;
 	private final FloatBuffer vertexBuffer;
+	private final FloatBuffer texCoordBuffer;
     private final ShortBuffer drawListBuffer;
     
     private float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
     private float normal[];
+    private final float textureCoordData[] = { 0, 1,  0, 0,  1, 0,  1, 1};
     
 	
 	public Plane(int programId, Vector3 from, Vector3 up, Vector3 right, int divisions) {
@@ -55,17 +57,28 @@ public class Plane extends Shape {
 		drawListBuffer = dlb.asShortBuffer();
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
+        
+        ByteBuffer tcb = ByteBuffer.allocateDirect(textureCoordData.length * 4);
+        tcb.order(ByteOrder.nativeOrder());
+        texCoordBuffer = tcb.asFloatBuffer();
+        texCoordBuffer.put(textureCoordData);
+        texCoordBuffer.position(0);
 	}
 	
 	@Override
 	public void draw(float[] mvpMatrix) {
 		
-		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vertex");		
-		
+		mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vertex");
 		GLES20.glEnableVertexAttribArray(mPositionHandle);
 		GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
+		
+		mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "texCoord");
+		GLES20.glEnableVertexAttribArray(mTexCoordHandle);
+		GLES20.glVertexAttribPointer(mTexCoordHandle, 2,
+                GLES20.GL_FLOAT, false,
+                4*2, texCoordBuffer);
 		
 		mNormalHandle = GLES20.glGetUniformLocation(mProgram, "normal");
 		GameGLRenderer.checkGlError("glGetUniformLocation");
