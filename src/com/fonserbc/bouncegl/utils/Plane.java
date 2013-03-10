@@ -21,14 +21,19 @@ public class Plane extends Shape {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
+    private int mNormalHandle;
 	private final FloatBuffer vertexBuffer;
     private final ShortBuffer drawListBuffer;
     
     private float color[] = { 0.2f, 0.709803922f, 0.898039216f, 1.0f };
+    private float normal[];
     
 	
 	public Plane(int programId, Vector3 from, Vector3 up, Vector3 right, int divisions) {
 		mProgram = programId;
+		
+		normal = new float[3];
+		normal = right.cross(up).normalize().array();
 		
 		ByteBuffer bb = ByteBuffer.allocateDirect(3 * 4 * 4 * divisions * divisions);
 		bb.order(ByteOrder.nativeOrder());
@@ -62,17 +67,13 @@ public class Plane extends Shape {
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 		
+		mNormalHandle = GLES20.glGetUniformLocation(mProgram, "normal");
+		GameGLRenderer.checkGlError("glGetUniformLocation");
+		GLES20.glUniform3fv(mNormalHandle, 1, normal, 0);
+		
 		mColorHandle = GLES20.glGetUniformLocation(mProgram, "color");
 		GameGLRenderer.checkGlError("glGetUniformLocation");
-		
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-        
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "modelViewProjectionMatrix");
-        GameGLRenderer.checkGlError("glGetUniformLocation");
-        
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
-        GameGLRenderer.checkGlError("glUniformMatrix4fv");
-        
+        GLES20.glUniform4fv(mColorHandle, 1, color, 0);        
         
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);

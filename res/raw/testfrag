@@ -1,0 +1,8 @@
+precision mediump float;
+uniform vec4 color;
+
+varying float normalZ;
+
+void main () {
+	gl_FragColor = color * max (0.3, max(0.0, normalZ));
+}

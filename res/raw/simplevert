@@ -4,7 +4,5 @@ uniform float time;
 attribute vec4 vertex;
 
 void main () {
-	vec4 aux = vertex;
-	aux.z = aux.z + sin(time);
-	gl_Position = modelViewProjectionMatrix * aux;
+	gl_Position = modelViewProjectionMatrix * vertex;
 }
