@@ -38,7 +38,7 @@ class GameGLSurfaceView extends GLSurfaceView {
 		mRenderer = new GameGLRenderer(context);
 		setRenderer(mRenderer);
 		
-		setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 	}
     
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
