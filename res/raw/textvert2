@@ -22,5 +22,6 @@ void main () {
 						
 	normalZ = normalize(mat3(normalMatrix) * (rot * normal)).z;
 	
-	gl_Position = modelViewProjectionMatrix * vec4(rot * vertex.xyz, 1.0);
+	float dist = 0.1;
+	gl_Position = modelViewProjectionMatrix * vec4(rot * (vertex.xyz + normal*dist/2.0 + normal*dist/2.0*sin(time*1.5)), 1.0);
 }
