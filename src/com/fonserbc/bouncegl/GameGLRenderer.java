@@ -16,6 +16,8 @@ import android.util.Log;
 
 public class GameGLRenderer implements GLSurfaceView.Renderer {
 
+	private static final float FRICTION = 50.0f;
+
 	private Context mContext;
 	
     private final float[] mMVPMatrix = new float[16];
@@ -31,7 +33,16 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
     
     private float mXAngle = 0;
     private float mYAngle = 0;
+    private float mVXAngle = 0;
+    private float mVYAngle = 0;
+    
     private float[] mCurrRotation = new float[16];
+    
+    private enum RotationMode {
+    	Normal,
+    	Stopping
+    }
+    private RotationMode mMode = RotationMode.Normal;
     
     public GameGLRenderer (Context context) {
     	mContext = context;
@@ -120,7 +131,8 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
 
 	public void onDrawFrame(GL10 unused) {
 		
-		timer.tick();
+		float deltaTime = timer.tick();
+		update(deltaTime);
 
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 			
@@ -156,7 +168,7 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
 			planes[i].draw(mMVPMatrix);
 		}
 	}
-
+	
 	public void onSurfaceChanged(GL10 unused, int width, int height) {
 
 		GLES20.glViewport(0, 0, width, height);
@@ -186,15 +198,50 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
             Log.e("BOUNCE_GL", glOperation + ": glError " + error);
             throw new RuntimeException(glOperation + ": glError " + error);
         }
-    }
+    }	
 
-	public void touchMovement(float x, float y) {
-		mXAngle += x;
+	private void update(float deltaTime) {
+		mXAngle += mVXAngle*deltaTime;
 		if (mXAngle > 180f) mXAngle -= 360;
 		else if (mXAngle < -180f) mXAngle += 360;
 		
-		mYAngle += y;
+		mYAngle += mVYAngle*deltaTime;
 		if (mYAngle > 180f) mYAngle -= 360;
 		else if (mYAngle < -180f) mYAngle += 360;
+		
+		switch (mMode) {
+			case Normal:
+				if (mVXAngle > 0) {
+					mVXAngle -= FRICTION*deltaTime;
+					if (mVXAngle < 0) mVXAngle = 0;
+				}
+				else if (mVXAngle < 0) {
+					mVXAngle += FRICTION*deltaTime;
+					if (mVXAngle > 0) mVXAngle = 0;
+				}
+				
+				if (mVYAngle > 0) {
+					mVYAngle -= FRICTION*deltaTime;
+					if (mVYAngle < 0) mVYAngle = 0;
+				}
+				else if (mVYAngle < 0) {
+					mVYAngle += FRICTION*deltaTime;
+					if (mVYAngle > 0) mVYAngle = 0;
+				}
+				break;
+			case Stopping:
+				mVXAngle -= mVXAngle*2*deltaTime;
+				mVYAngle -= mVYAngle*2*deltaTime;
+		}
+	}
+	
+	public void touchMovement(float x, float y) {
+		mMode = RotationMode.Normal;
+		mVXAngle += x;
+		mVYAngle += y;
+	}
+
+	public void backPressed() {
+		mMode = RotationMode.Stopping;
 	}
 }

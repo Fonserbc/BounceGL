@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
@@ -54,14 +56,17 @@ class GameGLSurfaceView extends GLSurfaceView {
         float x = e.getX();
         float y = e.getY();
 
-        switch (e.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-
-                float dx = x - mPreviousX;
-                float dy = y - mPreviousY;
-
-                mRenderer.touchMovement(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
-                requestRender();
+        if (y < 50) mRenderer.backPressed();
+        else {
+	        switch (e.getAction()) {
+	            case MotionEvent.ACTION_MOVE:
+	
+	                float dx = x - mPreviousX;
+	                float dy = y - mPreviousY;
+	
+	                mRenderer.touchMovement(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
+	                //requestRender();
+	        }
         }
 
         mPreviousX = x;
