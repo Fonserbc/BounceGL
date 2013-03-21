@@ -57,8 +57,8 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
 		Matrix.setLookAtM(mVMatrix, 0,  0,0,1.5f,  0,0,0,  0,1,0);
 		Matrix.setIdentityM(mCurrRotation, 0);
 		
-		String vertexCode = Utilities.stringFromResource(mContext, R.raw.textvert2);
-		String fragmentCode = Utilities.stringFromResource(mContext, R.raw.testfrag2);
+		String vertexCode = Utilities.stringFromResource(mContext, R.raw.testvert3);
+		String fragmentCode = Utilities.stringFromResource(mContext, R.raw.testfrag3);
 		
 		int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexCode);
 		int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentCode);
@@ -69,17 +69,19 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glLinkProgram(basicShader);
         GLES20.glUseProgram(basicShader);
         
+        Log.d("BOUNCE_GL", "Compiled program:\n"+GLES20.glGetProgramInfoLog(basicShader));
+        
         int mSpeedPointer = GLES20.glGetUniformLocation(basicShader, "speed");
         GameGLRenderer.checkGlError("glGetUniformLocation");
-		GLES20.glUniform1fv(mSpeedPointer, 1, new float[] {0}, 0);
+		GLES20.glUniform1fv(mSpeedPointer, 1, new float[] {3}, 0);
 		
 		int mTilingPointer = GLES20.glGetUniformLocation(basicShader, "tiling");
         GameGLRenderer.checkGlError("glGetUniformLocation");
-		GLES20.glUniform1fv(mTilingPointer, 1, new float[] {4}, 0);
+		GLES20.glUniform2fv(mTilingPointer, 1, new float[] {0, 0}, 0);
 		
-		int mStrokePointer = GLES20.glGetUniformLocation(basicShader, "lineSize");
+		int mStrokePointer = GLES20.glGetUniformLocation(basicShader, "lightDivs");
         GameGLRenderer.checkGlError("glGetUniformLocation");
-		GLES20.glUniform1fv(mStrokePointer, 1, new float[] {0.1f}, 0);
+		GLES20.glUniform1fv(mStrokePointer, 1, new float[] {5f}, 0);
 		
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 		GLES20.glClearDepthf(1.0f);
@@ -189,6 +191,8 @@ public class GameGLRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glShaderSource(shader, shaderCode);
         GLES20.glCompileShader(shader);
+        
+        Log.d("BOUNCE_GL", "Compiled shader:\n"+GLES20.glGetShaderInfoLog(shader));
         return shader;
     }
     

@@ -1,0 +1,41 @@
+precision highp float;
+uniform vec4 color;
+
+uniform float time;
+uniform float speed;
+
+uniform vec2 tiling;
+uniform float lightDivs;
+
+varying float normalZ;
+varying vec2 vTexCoord;
+
+float lightIntensity(vec2 pos) {
+	vec2 light = vec2(0.0,0.0);
+	vec2 d = pos - light;
+	float dist = sqrt(d.x*d.x + d.y*d.y);
+	
+	float aux = lightDivs*((-sin(time*1.5)+1.0)/2.0 + 0.5);
+	if (aux < 1.0) aux = 1.0;
+	float delta = 1.0/aux;
+	float i = floor(dist*dist/delta*dist);
+	return 1.0 - delta*i;
+}
+
+void main () {
+	vec2 pos = vTexCoord*2.0 - vec2(1.0,1.0);
+	float dist = sqrt(pos.x*pos.x + pos.y*pos.y);
+	if (dist > 1.0) discard;
+	
+	/*float yv = floor(tiling.y*pos.y);
+	float aux = speed*time;
+	if (mod(yv,2.0) == 0.0) aux = -aux;
+	float xv = floor(tiling.x*pos.x) + aux;
+
+	if (mod(xv,2.0) == 0.0) {
+		if (mod(yv,2.0) == 0.0) discard;
+	}
+	else if (mod(yv,2.0) == 1.0) discard;*/
+
+	gl_FragColor = color * max (0.3, max(0.0, normalZ*lightIntensity(pos)));
+}
