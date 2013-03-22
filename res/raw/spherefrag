@@ -1,0 +1,32 @@
+precision highp float;
+uniform vec4 color;
+
+uniform float lightDivs;
+uniform float lightHeight;
+uniform vec2 lightPos;
+
+varying float normalZ;
+varying vec2 vTexCoord;
+
+float hemisphericheight (vec2 p) {
+	return sqrt(1.0 - p.x*p.x - p.y*p.y);
+}
+
+float lightIntensity (vec2 pos) {
+	vec3 d = vec3(pos,hemisphericheight(pos)) - vec3(lightPos, 1.0);
+	float dist = sqrt(d.x*d.x + d.y*d.y + d.z*d.z);
+	
+	float aux = lightDivs;
+	if (aux < 1.0) aux = 1.0;
+	float delta = lightHeight/aux;
+	float i = floor(dist/delta);
+	return (lightHeight - delta*i)/lightHeight;
+}
+
+void main () {
+	vec2 pos = vTexCoord*2.0 - vec2(1.0,1.0);
+	float dist = sqrt(pos.x*pos.x + pos.y*pos.y);
+	if (dist > 1.0) discard;
+
+	gl_FragColor = color * max (0.3, lightIntensity(pos));
+}

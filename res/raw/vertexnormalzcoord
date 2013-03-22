@@ -1,0 +1,21 @@
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 normalMatrix;
+
+uniform float time;
+uniform float speed;
+
+uniform vec3 normal;
+
+varying float normalZ;
+varying vec2 vTexCoord;
+
+attribute vec4 vertex;
+attribute vec2 texCoord;
+
+void main () {
+	vTexCoord = texCoord;
+						
+	normalZ = normalize(mat3(normalMatrix) * normal).z;
+	
+	gl_Position = modelViewProjectionMatrix * vertex;
+}
